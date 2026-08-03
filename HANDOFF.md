@@ -18,34 +18,40 @@ is fixed and visually confirmed.
 
 ---
 
-## 2. ⚠️ Read this first — the work is uncommitted
+## 2. Version control status
+
+All work is **committed locally**. There is no remote — this repo lives only on
+this machine.
 
 ```
 $ git log --oneline
-e8d70f4 Initial commit from Create Next App     <- the ONLY commit
-
-$ git status --short
- M package.json / package-lock.json
- M src/app/globals.css / layout.tsx / page.tsx
-?? src/components/          <- ~35 files, entirely untracked
-?? src/content/             <- untracked
-?? src/lib/                 <- untracked
-?? public/media/            <- untracked
-?? public/Nana_Appiagyei_Poku_resume.pdf
+9816b73 Build portfolio site: 2D sections plus interactive 3D space-scene hero
+e8d70f4 Initial commit from Create Next App
 ```
 
-Every piece of real work — the whole 3D scene, all content, all components —
-exists only as untracked files on disk. **Commit before doing anything else.**
+Commit `9816b73` contains the entire portfolio: 55 files, ~7.5k insertions —
+the 3D scene, all components, all content, and this document.
+`.gitignore` is the stock Next.js one, so `node_modules/`, `.next/`, and
+`.env*` are correctly excluded.
+
+Repo-local git identity was set to
+`Nana Appiagyei Poku <pokun1@mcmaster.ca>` (scoped to this repo only, not
+global). Change it with:
 
 ```bash
-cd personal-website
-git add -A
-git commit -m "Portfolio site: 2D sections + 3D space-scene hero"
+git config user.email "you@example.com"
 ```
 
-Also note `public/Nana_Appiagyei_Poku_resume.pdf` is a real résumé containing
-personal contact details — decide deliberately whether that belongs in a public
-repo.
+### Before publishing this repo
+
+- `public/Nana_Appiagyei_Poku_resume.pdf` is a real résumé containing personal
+  contact details. It is committed because the site's nav links to it — but
+  decide deliberately whether that belongs in a *public* repo.
+- To add a remote later:
+  ```bash
+  git remote add origin <url>
+  git push -u origin master
+  ```
 
 ---
 
@@ -353,9 +359,8 @@ overlay off-screen. That is existing behaviour, unchanged by this fix.
   `destinations.ts` right, or reduce the ring extent in `Planet.tsx`.
 
 ### Recommended next
-1. **Commit the work** (§2).
-2. Apply the `frameloop` optimisation (§10).
-3. Re-run `test.mjs`, `loading.mjs`, `shimmer.mjs` against a production build.
+1. Apply the `frameloop` optimisation (§10).
+2. Re-run `test.mjs`, `loading.mjs`, `shimmer.mjs` against a production build.
 
 ### Waiting on the site owner
 - Real **GitHub URL** and **Blackprint live URL** — currently placeholders in

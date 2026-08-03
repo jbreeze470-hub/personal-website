@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="Blackprint demo placeholder">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="100%" stop-color="#0d1320"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg2)"/>
+  <rect x="140" y="120" width="1000" height="70" rx="8" fill="#131b2b" stroke="#1e2739"/>
+  <circle cx="185" cy="155" r="10" fill="#38bdf8"/>
+  <rect x="880" y="142" width="220" height="26" rx="13" fill="#1e2739"/>
+  <rect x="140" y="230" width="470" height="330" rx="8" fill="#131b2b" stroke="#1e2739"/>
+  <rect x="640" y="230" width="500" height="150" rx="8" fill="#131b2b" stroke="#1e2739"/>
+  <rect x="640" y="410" width="500" height="150" rx="8" fill="#131b2b" stroke="#1e2739"/>
+  <text x="640" y="640" text-anchor="middle" fill="#6b7a93"
+        font-family="monospace" font-size="24">Responsive · WCAG 2.1 AA</text>
+</svg>

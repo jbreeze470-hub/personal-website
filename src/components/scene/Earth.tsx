@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { EARTH } from "@/lib/destinations";
 import { useSiteStore } from "@/lib/store";
+import { sceneTime } from "@/lib/sceneTime";
 import { NOISE_OCTAVES, SPHERE_SEGMENTS } from "./shaders/lib";
 import {
   ATMOSPHERE_COLOR,
@@ -62,9 +63,9 @@ function EarthClouds({ reduced }: { reduced: boolean }) {
     [],
   );
 
-  useFrame((state) => {
+  useFrame(() => {
     if (reduced) return;
-    const t = state.clock.elapsedTime;
+    const t = sceneTime();
     const m = matRef.current;
     if (m) m.uniforms.uTime.value = t;
     if (meshRef.current) meshRef.current.rotation.y = t * CLOUD_SPIN_SPEED;
@@ -173,9 +174,9 @@ export function Earth() {
     m.uniforms.uBump.value = isLow ? 0 : 1;
   }, [octaves, isLow]);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (reduced) return;
-    const t = state.clock.elapsedTime;
+    const t = sceneTime();
     const m = matRef.current;
     if (m) m.uniforms.uTime.value = t;
     if (meshRef.current) meshRef.current.rotation.y = t * EARTH_SPIN_SPEED;

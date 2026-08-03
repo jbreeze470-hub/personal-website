@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSiteStore } from "@/lib/store";
+import { sceneTime } from "@/lib/sceneTime";
 import { flightState } from "./useFlyTo";
 import {
   createPanelMaterial,
@@ -430,7 +431,7 @@ export function Ship() {
     const dt = Math.min(delta, 0.05);
     const reduced = flightState.reducedMotion;
     const flying = useSiteStore.getState().isFlying;
-    const time = state.clock.elapsedTime;
+    const time = sceneTime();
 
     // Position: follow the anchor, add a gentle idle bob/drift when docked.
     g.position.copy(flightState.shipPosition);

@@ -129,7 +129,10 @@ void main() {
   float continents = landElevation(dir);
   float landMask = smoothstep(0.50, 0.54, continents);
   float lat = abs(dir.y); // 0 at equator, 1 at the poles
-  float moisture = warpedFbm(dir * 2.2 + vec3(21.0, 3.0, 7.0), uOctaves);
+  // Plain fbm, not warpedFbm: this only drives biome blending, and a
+  // warpedFbm costs four nested fbm evaluations (24 noise samples vs 6). The
+  // domain-warp swirl it buys is finer than a pixel at orbital distance.
+  float moisture = fbm(dir * 2.6 + vec3(21.0, 3.0, 7.0), uOctaves);
 
   // --- Ocean: abyssal deep -> shelf lightening near the coastline -------
   float shelf = smoothstep(0.44, 0.50, continents);

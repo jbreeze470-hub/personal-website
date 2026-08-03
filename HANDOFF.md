@@ -232,6 +232,13 @@ modal, so the nav is unreachable anyway; this resolved a z-index fight
 - **R3F v9 already defaults to `ACESFilmicToneMapping`** (only `flat` disables
   it) — no Canvas change needed.
 - **drei `<Html occlude>` raycasts every frame.** Removed for performance.
+- **R3F resets `clock.elapsedTime` to 0 on *every* `frameloop` change.** Its
+  `setFrameloop` does `clock.stop(); clock.elapsedTime = 0; clock.start()`.
+  Six places derived absolute animation from it (Earth spin, cloud drift, the
+  accretion disk, engine glow, idle camera drift), so pausing the loop on
+  scroll made the whole scene snap back to its t=0 pose on return. Fixed by
+  `src/lib/sceneTime.ts`, a `performance.now()`-based monotonic clock. **Never
+  read `state.clock.elapsedTime` in this project** — use `sceneTime()`.
 - **Bloom's `mipmapBlur` defaults to `levels={8}`,** which smears a halo across
   most of the viewport — this was the "smoke" the user reported. Now
   `levels={4} radius={0.55}`.
@@ -299,47 +306,35 @@ Verified:
   user reads the 2D content below. Pure waste, and a likely contributor to the
   "site feels slow" report.
 
-### Ready-to-apply fix (verified safe, not yet implemented)
+### Applied fix
 
-Pause the render loop when the hero leaves the viewport.
+`SceneCanvas.tsx` now wraps the `<Canvas>` in a host div, observes it with an
+`IntersectionObserver` (`rootMargin: "200px"`), and sets
+`frameloop={inView ? "always" : "never"}`.
 
-Both preconditions were checked:
+Both preconditions were checked before implementing:
 
 1. **R3F applies `frameloop` reactively.** In the render path:
-   `if (state.frameloop !== frameloop) state.setFrameloop(frameloop)` — so the
-   prop can be flipped at runtime.
+   `if (state.frameloop !== frameloop) state.setFrameloop(frameloop)`.
 2. **Flights are driven by GSAP's own ticker**, not `useFrame`
    (`useFlyTo.ts` → `gsap.to(progress, …)`). Pausing renders therefore cannot
    corrupt flight state. And because `CameraRig` *damps* toward the anchors
-   rather than copying them, resuming produces a smooth catch-up, not a snap.
+   rather than copying them, resuming eases back in rather than snapping.
 
-In `SceneCanvas.tsx`:
+The one trap this exposed: `setFrameloop` zeroes `clock.elapsedTime`, which
+would have snapped every time-driven animation. See §8 — all six sites now use
+`sceneTime()` instead.
 
-```tsx
-const [active, setActive] = useState(true);
-const hostRef = useRef<HTMLDivElement>(null);
+Verified with `e2e/scrollmode.mjs`: the page stays immersive across a full
+scroll-away-and-back cycle, and `e2e/perf.mjs` confirms the canvas resumes
+producing frames.
 
-useEffect(() => {
-  const host = hostRef.current;
-  if (!host) return;
-  const io = new IntersectionObserver(
-    ([entry]) => setActive(entry.isIntersecting),
-    { rootMargin: "100px" },   // resume just before it scrolls back in
-  );
-  io.observe(host);
-  return () => io.disconnect();
-}, []);
-
-// <div ref={hostRef} className="absolute inset-0">
-//   <Canvas frameloop={active ? "always" : "never"} …>
-```
-
-Tab-switching is already handled — R3F's loop is `requestAnimationFrame`-based,
+Tab-switching was already handled — R3F's loop is `requestAnimationFrame`-based,
 which browsers throttle on hidden tabs.
 
-One edge case to accept: if the user clicks a destination and scrolls away
+One edge case, accepted: if the user clicks a destination and scrolls away
 within the ~2s flight, `arrive()` still fires on GSAP's ticker and opens the
-overlay off-screen. That is existing behaviour, unchanged by this fix.
+overlay off-screen. That is pre-existing behaviour, unchanged by this fix.
 
 ---
 
@@ -349,18 +344,39 @@ overlay off-screen. That is existing behaviour, unchanged by this fix.
 - ✅ Bloom "smoke" halo removed (`levels={4}`, `radius={0.55}`) — verified in
   `files/shots/smoke-check.png`.
 - ✅ Stock Predictor moved to `[-16, -3, -12]` so it sits below the hero copy.
-- ✅ Work experience organization corrected to **"McMaster Software Labs"**
-  (was "McMaster Software Labs — ECE Department"). If the department was wanted,
-  revert in `src/content/experience.ts`.
+- ✅ Work experience organization corrected to **"McMaster Software Labs"**.
+- ✅ **3D performance pass** (see below).
+
+### Performance pass
+
+The scene was GPU fill-rate bound, not dev-mode bound — the GLSL is identical
+in dev and prod. Earth's surface shader alone ran 66 noise evaluations per
+pixel (each `warpedFbm` is 4 nested `fbm`), ~528 hash calls, on a canvas that
+was rendering at 2.25x the pixel count.
+
+| Change | File | Effect |
+|---|---|---|
+| DPR `[1, 1.5]` → `1` | `SceneCanvas.tsx` | ~56% less fragment work — the single biggest lever |
+| Octaves `6` → `4`, and the unrolled GLSL loop bound with it | `shaders/lib.ts` (`MAX_OCTAVES`) | ~33% fewer noise evals, smaller compiled shader |
+| Earth `moisture`: `warpedFbm` → `fbm` | `EarthShaders.ts` | 24 noise evals → 6 |
+| Pause render loop off-screen | `SceneCanvas.tsx` | No GPU cost at all while reading the 2D sections |
+
+Visual result verified in `files/shots/perf-after.png` — continents, clouds,
+city lights, gas-giant banding and rings all still read correctly.
+
+Note `NOISE_OCTAVES.high` is now bounded by `MAX_OCTAVES` in the same file;
+raising the tier means raising both, or the loop will clip it.
 
 ### Known cosmetic issue
 - Stock Predictor's **ring system is cropped by the left viewport edge** at
-  1990×975 (visible in `smoke-check.png`). Nudge `position[0]` in
+  1990×975 (visible in `perf-after.png`). Nudge `position[0]` in
   `destinations.ts` right, or reduce the ring extent in `Planet.tsx`.
 
 ### Recommended next
-1. Apply the `frameloop` optimisation (§10).
-2. Re-run `test.mjs`, `loading.mjs`, `shimmer.mjs` against a production build.
+1. Re-run `test.mjs`, `loading.mjs`, `shimmer.mjs` against a production build.
+2. If more speed is still wanted, the remaining big lever is **baking the
+   planet surfaces to textures once** and sampling them, instead of evaluating
+   noise per pixel per frame.
 
 ### Waiting on the site owner
 - Real **GitHub URL** and **Blackprint live URL** — currently placeholders in

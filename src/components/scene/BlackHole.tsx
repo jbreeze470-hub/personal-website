@@ -6,6 +6,7 @@ import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { DESTINATIONS } from "@/lib/destinations";
 import { useSiteStore } from "@/lib/store";
+import { sceneTime } from "@/lib/sceneTime";
 import { NOISE_OCTAVES } from "./shaders/lib";
 import { BILLBOARD_FRAGMENT, BILLBOARD_VERTEX } from "./BlackHoleShaders";
 
@@ -110,7 +111,7 @@ export function BlackHole() {
 
     // Advance the disk animation unless reduced motion asked us to hold still.
     if (mat && !reduced) {
-      mat.uniforms.uTime.value = state.clock.elapsedTime;
+      mat.uniforms.uTime.value = sceneTime();
     }
 
     // Billboard the disk: keep the quad square-on to the camera every frame so

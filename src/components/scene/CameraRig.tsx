@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useSiteStore } from "@/lib/store";
 import { DESTINATIONS } from "@/lib/destinations";
+import { sceneTime } from "@/lib/sceneTime";
 import { flightState, getCameraDock } from "./useFlyTo";
 
 /** How quickly the camera position catches up to the animated anchor (weighty lag). */
@@ -100,7 +101,7 @@ export function CameraRig() {
     // Subtle idle parallax while docked — mean-zero, so the subject stays framed.
     _drift.set(0, 0, 0);
     if (!flying) {
-      const time = state.clock.elapsedTime;
+      const time = sceneTime();
       _drift.set(
         Math.sin(time * 0.5) * 0.05,
         Math.cos(time * 0.4) * 0.035,

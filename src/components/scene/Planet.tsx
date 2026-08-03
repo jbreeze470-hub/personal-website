@@ -7,6 +7,7 @@ import { Html } from "@react-three/drei";
 import { DESTINATIONS } from "@/lib/destinations";
 import { useSiteStore } from "@/lib/store";
 import type { DestinationId } from "@/lib/types";
+import { sceneTime } from "@/lib/sceneTime";
 import {
   GLSL_BUMP,
   GLSL_FRESNEL,
@@ -475,7 +476,7 @@ export function Planet({ id }: { id: DestinationId }) {
     if (core) {
       // Advance surface animation only when motion is allowed; visuals persist.
       if (!reduced) {
-        core.uniforms.uTime.value = state.clock.elapsedTime;
+        core.uniforms.uTime.value = sceneTime();
       }
 
       // Smoothly drive the limb-glow highlight toward the interaction state.

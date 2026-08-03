@@ -9,6 +9,15 @@
  * noise code), chosen so they stay cheap on integrated GPUs.
  */
 
+/**
+ * Highest octave count any shader may request.
+ *
+ * This bounds the unrolled loop in `fbm`/`ridged`, so lowering it shrinks the
+ * compiled shader as well as the per-pixel work — a uniform-controlled `break`
+ * alone would still leave the full six iterations in the binary.
+ */
+const MAX_OCTAVES = 4;
+
 /** Cheap deterministic hash + 3D value noise + fbm. */
 export const GLSL_NOISE = /* glsl */ `
 float hash31(vec3 p) {
@@ -46,7 +55,7 @@ float fbm(vec3 p, int octaves) {
   float sum = 0.0;
   float amp = 0.5;
   float freq = 1.0;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < ${MAX_OCTAVES}; i++) {
     if (i >= octaves) break;
     sum += amp * vnoise(p * freq);
     freq *= 2.02;
@@ -60,7 +69,7 @@ float ridged(vec3 p, int octaves) {
   float sum = 0.0;
   float amp = 0.5;
   float freq = 1.0;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < ${MAX_OCTAVES}; i++) {
     if (i >= octaves) break;
     float n = 1.0 - abs(vnoise(p * freq) * 2.0 - 1.0);
     sum += amp * n * n;
@@ -200,11 +209,13 @@ mat2 rot2(float a) {
 /** Everything, in dependency order. Prepend to any fragment shader. */
 export const GLSL_LIB = `${GLSL_NOISE}\n${GLSL_FRESNEL}\n${GLSL_CELLULAR}\n${GLSL_COLOR}\n${GLSL_ROTATE}`;
 
-/** Octave budget per quality tier. The high tier is deliberately generous —
- *  surface detail is the whole point of the scene — while the low tier stays
- *  cheap for the devices the FPS sampler downgrades. */
+/** Octave budget per quality tier. Capped at MAX_OCTAVES, which also bounds the
+ *  unrolled loop in `fbm`/`ridged`. Four octaves keeps continents, ranges and
+ *  cloud structure legible; the fifth and sixth add detail finer than a pixel
+ *  at the distances the camera actually sits, so they cost fill rate for no
+ *  visible gain. */
 export const NOISE_OCTAVES = {
-  high: 6,
+  high: MAX_OCTAVES,
   low: 2,
 } as const;
 

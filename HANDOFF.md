@@ -367,6 +367,25 @@ city lights, gas-giant banding and rings all still read correctly.
 Note `NOISE_OCTAVES.high` is now bounded by `MAX_OCTAVES` in the same file;
 raising the tier means raising both, or the loop will clip it.
 
+### Overlay arrival animation
+
+The CSS transition was already correct; the jank came from two things around it.
+
+| Problem | Fix |
+|---|---|
+| Locking scroll (`body { overflow: hidden }`) reclaimed the scrollbar's ~15px and shifted header, hero copy and canvas sideways at the exact moment the panel slid in | `scrollbar-gutter: stable` on `html` in `globals.css` — the gutter is always reserved, so locking scroll changes no layout |
+| Panel was not on its own compositor layer (`will-change: auto`), so the slide repainted while the GPU was saturated by the 3D scene | `[will-change:transform] transform-gpu` on the panel, `[will-change:opacity]` on the backdrop |
+| Focusing the close button scrolled the still-sliding panel into view | `focus({ preventScroll: true })` |
+| Panel finished in 300ms while the camera re-frame took ~750ms, so the two motions ended at different times | Panel now 440ms on a quintic ease-out; `FRAME_LAMBDA` 4 → 6 so the camera settles in ~500ms alongside it |
+
+Verified by `e2e/overlayanim.mjs` (7/7): no horizontal layout shift, gutter
+reserved, both layers promoted, and the custom duration/easing actually
+compiled out of the Tailwind arbitrary values.
+
+Note the headless browser uses overlay scrollbars (width 0), so the layout
+shift is invisible there — it only reproduces in real Windows Chrome. The test
+asserts the gutter is reserved rather than trying to observe the shift.
+
 ### Known cosmetic issue
 - Stock Predictor's **ring system is cropped by the left viewport edge** at
   1990×975 (visible in `perf-after.png`). Nudge `position[0]` in

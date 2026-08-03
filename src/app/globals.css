@@ -31,6 +31,15 @@ html {
   scroll-padding-top: 5rem;
   /* Owns the page backdrop so the star layer can be pure pattern. */
   background-color: var(--color-void);
+  /**
+   * Reserve the scrollbar gutter permanently. Opening the destination overlay
+   * sets `overflow: hidden` on the body to lock scrolling, which otherwise
+   * reclaims the scrollbar's width and shifts the entire page — header, hero
+   * copy and 3D canvas — sideways by ~15px at the exact moment the panel
+   * slides in. Reserving the gutter up front means locking scroll changes
+   * nothing about layout.
+   */
+  scrollbar-gutter: stable;
 }
 
 body {

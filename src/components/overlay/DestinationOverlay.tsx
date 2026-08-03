@@ -257,11 +257,14 @@ export function DestinationOverlay() {
 
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
+    // preventScroll: focusing an element inside a panel that is still sliding
+    // in would otherwise scroll it into view mid-animation, fighting the
+    // transform.
+    closeButtonRef.current?.focus({ preventScroll: true });
 
     return () => {
       document.body.style.overflow = "";
-      previousFocusRef.current?.focus();
+      previousFocusRef.current?.focus({ preventScroll: true });
     };
   }, [open]);
 
@@ -318,7 +321,11 @@ export function DestinationOverlay() {
       {/* Backdrop */}
       <div
         className={[
-          "absolute inset-0 bg-void/70 transition-opacity duration-300",
+          "absolute inset-0 bg-void/70",
+          // Promoted so the fade composites on the GPU instead of repainting
+          // while the 3D scene is already saturating it.
+          "[will-change:opacity] transition-opacity duration-[440ms]",
+          "ease-[cubic-bezier(0.22,1,0.36,1)]",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         ].join(" ")}
         onClick={closeOverlay}
@@ -332,7 +339,19 @@ export function DestinationOverlay() {
         className={[
           "absolute inset-x-0 bottom-0 h-[85dvh]",
           "sm:inset-y-0 sm:left-auto sm:right-0 sm:h-full sm:w-full sm:max-w-xl",
-          "transition-transform duration-300 ease-out",
+          /**
+           * `will-change: transform` keeps the panel on its own compositor
+           * layer, so the slide never triggers a repaint — it arrives at the
+           * same moment the camera is re-framing and every planet shader is
+           * still drawing, which is exactly when a repaint would stutter.
+           *
+           * Quintic ease-out over 440ms: most of the travel happens early and
+           * it settles gently, which reads as deliberate rather than abrupt.
+           * It also runs slightly longer than the camera's re-framing damp, so
+           * the two motions finish together instead of one snapping first.
+           */
+          "[will-change:transform] transform-gpu",
+          "transition-transform duration-[440ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
           open
             ? "translate-y-0 sm:translate-x-0"
             : "translate-y-full sm:translate-y-0 sm:translate-x-full",

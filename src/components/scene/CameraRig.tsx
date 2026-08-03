@@ -12,8 +12,15 @@ import { flightState, getCameraDock } from "./useFlyTo";
 const POS_LAMBDA = 6;
 /** How quickly the look-at target catches up (kept tighter than position). */
 const LOOK_LAMBDA = 8;
-/** How quickly the framing shifts when the overlay opens or closes. */
-const FRAME_LAMBDA = 4;
+/**
+ * How quickly the framing shifts when the overlay opens or closes.
+ *
+ * Tuned against the panel's 440ms slide: an exponential damp is ~95% settled
+ * after 3/lambda seconds, so lambda 6 lands at ~0.5s. Matching the two means
+ * the camera re-frame and the panel arrive together, instead of one snapping
+ * into place while the other is still moving.
+ */
+const FRAME_LAMBDA = 6;
 /**
  * Fraction of the viewport's half-width the subject slides left by while the
  * overlay is open, so it stays visible beside the panel instead of behind it.

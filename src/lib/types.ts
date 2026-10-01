@@ -27,7 +27,6 @@ export interface Profile {
   email: string;
   phone: string;
   links: Link[];
-  resumeHref: string;
 }
 
 export interface Education {

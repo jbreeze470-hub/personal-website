@@ -18,7 +18,7 @@ export const experience: Experience[] = [
   {
     id: "mcmaster-software-labs",
     role: "Machine Learning Research Assistant (Co-op)",
-    organization: "McMaster Software Labs",
+    organization: "McMaster Swiftware Labs",
     location: "Hamilton, ON",
     period: "Apr 2025 – Sep 2025",
     current: false,
@@ -44,7 +44,7 @@ export const experience: Experience[] = [
   },
   {
     id: "nsbe",
-    role: "IDEA Conference Co-Coordinator",
+    role: "Membership Chair",
     organization: "National Society of Black Engineers",
     location: "Hamilton, ON",
     period: "Sep 2024 – Present",

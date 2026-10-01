@@ -67,14 +67,6 @@ export function SiteHeader() {
               {section.label}
             </a>
           ))}
-          <a
-            href={profile.resumeHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-xs border border-accent text-accent px-3 py-1.5 rounded hover:bg-accent hover:text-void transition-colors tracking-wide"
-          >
-            Resume
-          </a>
         </nav>
 
         {/* Mobile nav — minimal */}

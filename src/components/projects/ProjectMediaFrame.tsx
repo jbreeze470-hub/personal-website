@@ -12,7 +12,6 @@ export function ProjectMediaFrame({ project }: { project: Project }) {
           controls
           preload="none"
           playsInline
-          poster={poster}
           className="h-full w-full object-cover"
         >
           <source src={video} />

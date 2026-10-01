@@ -28,8 +28,8 @@ export const projects: Project[] = [
     ],
     media: {
       poster: "/media/stock-predictor-poster.svg",
-      video: undefined,
-      placeholder: true,
+      video: "/media/stock-predictor-demo.mp4",
+      placeholder: false,
     },
     caseStudy: {
       problem:
@@ -60,8 +60,8 @@ export const projects: Project[] = [
     tech: ["TypeScript", "JavaScript", "HTML", "CSS", "Bootstrap", "WCAG 2.1"],
     media: {
       poster: "/media/blackprint-poster.svg",
-      video: undefined,
-      placeholder: true,
+      video: "/media/blackprint-demo.mp4",
+      placeholder: false,
     },
     caseStudy: {
       problem:
